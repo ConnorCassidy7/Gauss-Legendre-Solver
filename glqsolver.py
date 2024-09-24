@@ -14,6 +14,7 @@ a = 0.1
 b = 1
 epsilon = 1e-3
 m = 1
+A = 2
 
 meshpoints = np.polynomial.legendre.leggauss(n)[0]
 weights = np.polynomial.legendre.leggauss(n)[1]
@@ -52,10 +53,10 @@ def M2(k, E):
 M2_vectorized = np.vectorize(M2)
 
 def sb(E):
-    return 4*(m**2 - (1/(E/m))**2)
+    return 4*(m**2 - (1/(A))**2)
 
 def smallg(E):
-    return 8 * np.sqrt(2*np.pi *np.sqrt(sb(E)) * (E/m))
+    return 8 * np.sqrt(2*np.pi *np.sqrt(sb(E)) * (1/A))
 
 def q(E):
     return 1/(2*E) * np.sqrt(kallenlambda(E**2, sb(E), m**2))
@@ -93,7 +94,6 @@ def Mphib(globeE):
             while si <= N:
                 row = row + [weightconvert(weights[si])*K(intconvert(points[ti]), intconvert(points[si]))]
                 si = si + 1
-            print('row:', row)
             matrix = np.append(matrix, np.array([row]), axis=0)
             ti = ti + 1
         return matrix
@@ -102,15 +102,6 @@ def Mphib(globeE):
         M = np.identity(n) - (Kmat)
         inverse = np.linalg.inv(M)
         return np.dot(inverse, gvec)
-
-    def integrate(fvec, points):
-        sum = 0
-        i = 0
-        N = len(points) - 1
-        while i <= N:
-            sum = sum + fvec[i]*weightconvert(weights[i])
-            i = i + 1
-        return sum
 
     gvec = vectorize(g, meshpoints)
     kmat = matrixize(K, meshpoints)
@@ -127,11 +118,22 @@ def Mphib(globeE):
     
     return (smallg(globeE))**2  * f(q(globeE))
 
-xdata = np.linspace(1, 10, 10)
-ydata = Mphib(xdata)
-#plt.plot(points, fvec)
+xdata = []
+ydata = []
+
+
+x = 3
+
+xfinal = 3.5
+step = 0.00025
+while x < xfinal:
+    y = Mphib(x)
+    xdata = xdata + [x]
+    ydata = ydata + [y]
+    x = x + step
+
 plt.plot(xdata,np.real(ydata))
-#plt.plot(xdata,np.imag(ydata))
+plt.plot(xdata,np.imag(ydata))
 plt.show()
 
 #print(matrixize(K, meshpoints))
